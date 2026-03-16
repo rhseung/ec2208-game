@@ -1,0 +1,9 @@
+[project]
+name = "ec2208-game"
+version = "0.1.0"
+description = "EC2208 Game Project"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pygame>=2.6.1",
+]
