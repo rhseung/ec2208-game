@@ -13,15 +13,24 @@ class Enemy:
     max_hp: int = 10
     atk: int = 3
 
-    def move(self, dx: int, dy: int, dungeon: DungeonMap) -> bool:
+    def move(self, dx: int, dy: int, dungeon: DungeonMap, enemies: list[Enemy], player) -> bool:
         nx, ny = self.x + dx, self.y + dy
-        if dungeon.is_walkable(nx, ny):
-            self.x = nx
-            self.y = ny
-            return True
-        return False
+        
+        if not dungeon.is_walkable(nx, ny):
+            return False
+            
+        if nx == player.x and ny == player.y:
+            return False
+            
+        for other in enemies:
+            if other is not self and other.x == nx and other.y == ny:
+                return False
+                
+        self.x = nx
+        self.y = ny
+        return True
 
-    def move_towards(self, tx: int, ty: int, dungeon: DungeonMap, player) -> None:
+    def move_towards(self, tx: int, ty: int, dungeon: DungeonMap, enemies: list[Enemy], player) -> None:
         if abs(self.x - tx) + abs(self.y - ty) == 1:
             self.attack(player)
             return
@@ -29,11 +38,10 @@ class Enemy:
         path = astar(dungeon, (self.x, self.y), (tx, ty))
         if path:
             next_x, next_y = path[0]
-            if next_x == player.x and next_y == player.y:
-                return
+            dx = next_x - self.x
+            dy = next_y - self.y
             
-            self.x = next_x
-            self.y = next_y
+            self.move(dx, dy, dungeon, enemies, player)
 
     def attack(self, player) -> int:
         damage = max(0, self.atk - player.def_)
@@ -64,7 +72,7 @@ class EnemyManager:
 
     def update_enemies(self, player, dungeon: DungeonMap) -> None:
         for enemy in self.enemies:
-            enemy.move_towards(player.x, player.y, dungeon, player)
+            enemy.move_towards(player.x, player.y, dungeon, self.enemies, player)
 
     def remove_dead(self) -> list[Enemy]:
         dead = [e for e in self.enemies if e.hp <= 0]
