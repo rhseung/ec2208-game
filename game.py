@@ -139,5 +139,4 @@ class Game:
             sx = (enemy.x - self.cam_x) * TILE_SIZE
             sy = (enemy.y - self.cam_y) * TILE_SIZE
             
-            if 0 <= sx < VIEWPORT_W and 0 <= sy < SCREEN_H:
-                pygame.draw.rect(self.screen, ENEMY_COLOR, pygame.Rect(sx, sy, TILE_SIZE, TILE_SIZE))
+            pygame.draw.rect(self.screen, ENEMY_COLOR, pygame.Rect(sx, sy, TILE_SIZE, TILE_SIZE))
