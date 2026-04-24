@@ -54,6 +54,10 @@ class Game:
 
         self._build_hud()
 
+        self.state = "PLAYER_TURN"
+        self.turn_delay_timer = 0.0
+        self.TURN_TRANSITION_DELAY = 0.3
+
     def _build_hud(self) -> None:
         pad = 12
         label_h = 18
@@ -97,14 +101,25 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
-                direction = KEY_TO_DIR.get(event.key)
-                if direction:
-                    if self.player.move(*direction, self.dungeon_map):
-                        self.enemy_manager.update_enemies(self.player, self.dungeon_map)
-                        self._center_camera()
+                
+                if self.state == "PLAYER_TURN":
+                    direction = KEY_TO_DIR.get(event.key)
+                    if direction:
+                        if self.player.move(*direction, self.dungeon_map):
+                            self._center_camera()
+                            self.state = "ENEMY_TURN"
+                            self.enemy_move_queue = list(self.enemy_manager.get_all())
+                            self.turn_delay_timer = self.TURN_TRANSITION_DELAY
+            
             self.ui_manager.process_events(event)
 
     def _update(self, dt: float) -> None:
+        if self.state == "ENEMY_TURN":
+            self.turn_delay_timer -= dt
+            if self.turn_delay_timer <= 0:
+                self.enemy_manager.update_enemies(self.player, self.dungeon_map)
+                self.state = "PLAYER_TURN"
+
         self.hp_bar.percent_full = self.player.hp_ratio
         self.ui_manager.update(dt)
 
