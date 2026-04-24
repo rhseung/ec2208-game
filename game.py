@@ -2,6 +2,7 @@ import pygame
 import pygame_gui
 from components.map import DungeonMap, Tile
 from components.player import Player
+from components.enemy import EnemyManager
 
 SCREEN_W, SCREEN_H = 1280, 720
 VIEWPORT_W = 1020
@@ -19,6 +20,7 @@ TILE_COLORS: dict[str, tuple[int, int, int]] = {
 }
 WALL_BORDER  = (15, 15, 25)
 PLAYER_COLOR = (220, 200, 60)
+ENEMY_COLOR  = (200, 50, 50)
 
 KEY_TO_DIR: dict[int, tuple[int, int]] = {
     pygame.K_UP:    (0, -1), pygame.K_w: (0, -1),
@@ -43,11 +45,18 @@ class Game:
         sx, sy = self.dungeon_map.rooms[0].center()
         self.player = Player(x=sx, y=sy)
 
+        self.enemy_manager = EnemyManager()
+        self.enemy_manager.spawn(self.dungeon_map)
+
         self.cam_x = 0
         self.cam_y = 0
         self._center_camera()
 
         self._build_hud()
+
+        self.state = "PLAYER_TURN"
+        self.turn_delay_timer = 0.0
+        self.TURN_TRANSITION_DELAY = 0.3
 
     def _build_hud(self) -> None:
         pad = 12
@@ -92,19 +101,32 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
-                direction = KEY_TO_DIR.get(event.key)
-                if direction:
-                    self.player.move(*direction, self.dungeon_map)
-                    self._center_camera()
+                
+                if self.state == "PLAYER_TURN":
+                    direction = KEY_TO_DIR.get(event.key)
+                    if direction:
+                        if self.player.move(*direction, self.dungeon_map):
+                            self._center_camera()
+                            self.state = "ENEMY_TURN"
+                            self.enemy_move_queue = list(self.enemy_manager.get_all())
+                            self.turn_delay_timer = self.TURN_TRANSITION_DELAY
+            
             self.ui_manager.process_events(event)
 
     def _update(self, dt: float) -> None:
+        if self.state == "ENEMY_TURN":
+            self.turn_delay_timer -= dt
+            if self.turn_delay_timer <= 0:
+                self.enemy_manager.update_enemies(self.player, self.dungeon_map)
+                self.state = "PLAYER_TURN"
+
         self.hp_bar.percent_full = self.player.hp_ratio
         self.ui_manager.update(dt)
 
     def _draw(self) -> None:
         self.screen.fill((0, 0, 0))
         self._draw_map()
+        self._draw_enemies()
         self._draw_player()
         self.ui_manager.draw_ui(self.screen)
         pygame.display.flip()
@@ -126,3 +148,10 @@ class Game:
         sx = (self.player.x - self.cam_x) * TILE_SIZE
         sy = (self.player.y - self.cam_y) * TILE_SIZE
         pygame.draw.rect(self.screen, PLAYER_COLOR, pygame.Rect(sx, sy, TILE_SIZE, TILE_SIZE))
+
+    def _draw_enemies(self) -> None:
+        for enemy in self.enemy_manager.get_all():
+            sx = (enemy.x - self.cam_x) * TILE_SIZE
+            sy = (enemy.y - self.cam_y) * TILE_SIZE
+            
+            pygame.draw.rect(self.screen, ENEMY_COLOR, pygame.Rect(sx, sy, TILE_SIZE, TILE_SIZE))
