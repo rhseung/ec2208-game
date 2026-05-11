@@ -98,18 +98,24 @@ def _connect_siblings(node: _BSPNode, dungeon: DungeonMap) -> None:
 
 
 def _carve_tunnel(dungeon: DungeonMap, a: tuple[int, int], b: tuple[int, int]) -> None:
+    """통로를 PATH(자갈길)로 깎는다. 방(FLOOR)을 가로지를 땐 덮어쓰지 않는다."""
     x1, y1 = a
     x2, y2 = b
+
+    def carve(x: int, y: int) -> None:
+        if dungeon.get_tile(x, y) == Tile.WALL:
+            dungeon.set_tile(x, y, Tile.PATH)
+
     if random.random() > 0.5:
         for x in range(min(x1, x2), max(x1, x2) + 1):
-            dungeon.set_tile(x, y1, Tile.FLOOR)
+            carve(x, y1)
         for y in range(min(y1, y2), max(y1, y2) + 1):
-            dungeon.set_tile(x2, y, Tile.FLOOR)
+            carve(x2, y)
     else:
         for y in range(min(y1, y2), max(y1, y2) + 1):
-            dungeon.set_tile(x1, y, Tile.FLOOR)
+            carve(x1, y)
         for x in range(min(x1, x2), max(x1, x2) + 1):
-            dungeon.set_tile(x, y2, Tile.FLOOR)
+            carve(x, y2)
 
 
 def _build_graph(rooms: list[Room]) -> dict[int, list[int]]:

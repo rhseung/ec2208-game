@@ -5,8 +5,9 @@ from enum import StrEnum
 
 
 class Tile(StrEnum):
-    WALL = '#'
-    FLOOR = '.'
+    WALL = '#'        # 시각적으론 바다(sea) — 통과 불가
+    FLOOR = '.'       # 시각적으론 잔디 — 방 내부
+    PATH = ','        # 시각적으론 자갈길 — 통로(corridor)
     DOOR = 'D'
     STAIRS_UP = '<'
     STAIRS_DOWN = '>'
@@ -53,7 +54,7 @@ class DungeonMap:
             self.grid[y][x] = tile
 
     def is_walkable(self, x: int, y: int) -> bool:
-        return self.get_tile(x, y) in (Tile.FLOOR, Tile.DOOR, Tile.STAIRS_UP, Tile.STAIRS_DOWN)
+        return self.get_tile(x, y) in (Tile.FLOOR, Tile.PATH, Tile.DOOR, Tile.STAIRS_UP, Tile.STAIRS_DOWN)
 
     def get_neighbors(self, x: int, y: int) -> list[tuple[int, int]]:
         result = []

@@ -1,10 +1,10 @@
 import heapq
 from components.map import DungeonMap
 
+
+# TODO: 인식 boundary 추가하기. 지금은 맵 전체에서 인식됨
 def astar(
-    dungeon: DungeonMap,
-    start: tuple[int, int],
-    goal: tuple[int, int]
+    dungeon: DungeonMap, start: tuple[int, int], goal: tuple[int, int]
 ) -> list[tuple[int, int]]:
     if start == goal:
         return []
