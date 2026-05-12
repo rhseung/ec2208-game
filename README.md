@@ -1,6 +1,6 @@
 # Dungeon Crawler RPG — EC2208 팀 프로젝트
 
-턴제 던전 크롤러 RPG. **Undo(시간 되감기)** 가 핵심 게임플레이 메커닉.
+턴제 던전 크롤러 RPG.
 
 ---
 
@@ -20,9 +20,14 @@
 
 ### 미구현
 
+bonus: 
+- sprite variant
+- install vegetable randomly
+- user, enemy sprite
+
 | 파일 | 우선순위 | 내용 |
 | ------ | --------- | ------ |
-| `components/undo.py` | ★★★ | `GameSnapshot`, `UndoStack` (max 30) — 핵심 메커닉 |
+| `components/undo.py` | ★★★ | `GameSnapshot`, `UndoStack` (max 30) |
 | `components/turn.py` | ★★☆ | `TurnManager` (deque) — 현재 `game.py`에 인라인으로 존재 |
 | `components/inventory.py` | ★★☆ | `ItemLinkedList`, `Inventory`, `Item` |
 | `components/leaderboard.py` | ★☆☆ | `Leaderboard`, `ScoreEntry`, JSON 영속성 |
