@@ -14,6 +14,7 @@ class Enemy:
     max_hp: int = 10
     atk: int = 3
     stunned: bool = False
+    detection_range: int = 15
 
     def move(self, dx: int, dy: int, dungeon: DungeonMap, enemies: list[Enemy], player) -> bool:
         nx, ny = self.x + dx, self.y + dy
@@ -52,7 +53,7 @@ class Enemy:
     def attack(self, player) -> int:
         damage = max(0, self.atk - player.def_)
         player.hp = max(0, player.hp - damage)
-        player.def_ = max(0, player.def_ - 1)  # 방어력 1 감소
+        player.def_ = max(player.DEFAULT_DEF, player.def_ - 1)
         return damage
 
     @property
@@ -79,7 +80,9 @@ class EnemyManager:
 
     def update_enemies(self, player, dungeon: DungeonMap) -> None:
         for enemy in self.enemies:
-            enemy.move_towards(player.x, player.y, dungeon, self.enemies, player)
+            dist = abs(enemy.x - player.x) + abs(enemy.y - player.y)
+            if dist <= enemy.detection_range:
+                enemy.move_towards(player.x, player.y, dungeon, self.enemies, player)
 
     def remove_dead(self, item_manager: ItemManager) -> list[Enemy]:
         dead = [e for e in self.enemies if e.hp <= 0]

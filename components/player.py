@@ -10,9 +10,12 @@ class Player:
     hp: int = 30
     max_hp: int = 30
     atk: int = 5
-    def_: int = 2
+    def_: int = 0
     xp: int = 0
     arrows: int = 5
+
+    DEFAULT_ATK: int = 5
+    DEFAULT_DEF: int = 0
 
     def move(self, dx: int, dy: int, dungeon: DungeonMap) -> bool:
         """이동 시도. 이동 가능하면 좌표를 갱신하고 True 반환."""
