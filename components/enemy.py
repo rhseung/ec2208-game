@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from components.map import DungeonMap, Tile
+from components.item import ItemType, ItemManager
 from algorithms.pathfinding import astar
 import random
 
@@ -12,6 +13,7 @@ class Enemy:
     hp: int = 10
     max_hp: int = 10
     atk: int = 3
+    stunned: bool = False
 
     def move(self, dx: int, dy: int, dungeon: DungeonMap, enemies: list[Enemy], player) -> bool:
         nx, ny = self.x + dx, self.y + dy
@@ -31,6 +33,10 @@ class Enemy:
         return True
 
     def move_towards(self, tx: int, ty: int, dungeon: DungeonMap, enemies: list[Enemy], player) -> None:
+        if self.stunned:
+            self.stunned = False
+            return
+
         if abs(self.x - tx) + abs(self.y - ty) == 1:
             self.attack(player)
             return
@@ -46,6 +52,7 @@ class Enemy:
     def attack(self, player) -> int:
         damage = max(0, self.atk - player.def_)
         player.hp = max(0, player.hp - damage)
+        player.def_ = max(0, player.def_ - 1)  # 방어력 1 감소
         return damage
 
     @property
@@ -74,8 +81,17 @@ class EnemyManager:
         for enemy in self.enemies:
             enemy.move_towards(player.x, player.y, dungeon, self.enemies, player)
 
-    def remove_dead(self) -> list[Enemy]:
+    def remove_dead(self, item_manager: ItemManager) -> list[Enemy]:
         dead = [e for e in self.enemies if e.hp <= 0]
+        for e in dead:
+            # None (40%), ATK (30%), DEF (30%)
+            roll = random.random()
+            if roll < 0.3:
+                item_manager.spawn(e.x, e.y, ItemType.ATK_UP)
+            elif roll < 0.6:
+                item_manager.spawn(e.x, e.y, ItemType.DEF_UP)
+            # else: no drop (40%)
+
         self.enemies = [e for e in self.enemies if e.hp > 0]
         return dead
 

@@ -23,6 +23,26 @@ class Player:
             return True
         return False
 
+    def attack(self, enemy) -> int:
+        damage = max(0, self.atk)
+        enemy.hp -= damage
+        return damage
+
+    def area_attack(self, enemies: list) -> list:
+        hit_enemies = []
+        for dx in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                if dx == 0 and dy == 0:
+                    continue
+                
+                nx, ny = self.x + dx, self.y + dy
+                for enemy in enemies:
+                    if enemy.x == nx and enemy.y == ny:
+                        self.attack(enemy)
+                        enemy.stunned = True
+                        hit_enemies.append(enemy)
+        return hit_enemies
+
     @property
     def hp_ratio(self) -> float:
         return self.hp / self.max_hp
