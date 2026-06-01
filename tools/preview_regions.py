@@ -29,7 +29,7 @@ REGIONS: list[tuple[str, int, int, int, int]] = [
 ]
 
 
-def load_font() -> ImageFont.ImageFont:
+def load_font() -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     candidates = [
         "/System/Library/Fonts/Menlo.ttc",
         "/System/Library/Fonts/Monaco.ttc",
@@ -48,7 +48,7 @@ def crop_with_labels(
     sheet: Image.Image,
     name: str,
     c0: int, r0: int, c1: int, r1: int,
-    font: ImageFont.ImageFont,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
 ) -> str:
     """주어진 영역을 잘라 8배 확대하고 격자/라벨을 그려 저장. 출력 경로 반환."""
     cols = c1 - c0 + 1
@@ -60,7 +60,7 @@ def crop_with_labels(
         (c1 + 1) * TILE_PX, (r1 + 1) * TILE_PX,
     ))
     out_w, out_h = src_w * SCALE, rows * TILE_PX * SCALE
-    scaled = cropped.resize((out_w, out_h), Image.NEAREST)
+    scaled = cropped.resize((out_w, out_h), Image.Resampling.NEAREST)
 
     canvas = Image.new("RGBA", (out_w, out_h), (0, 0, 0, 0))
     canvas.paste(scaled, (0, 0))
