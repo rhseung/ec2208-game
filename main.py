@@ -1,13 +1,10 @@
-import pygame
-from game import Game
+from renderer.tui import DungeonApp
 
 
-def main():
-    pygame.init()
-    game = Game()
-    game.run()
-    pygame.quit()
+def main() -> None:
+    DungeonApp().run()
 
 
 if __name__ == "__main__":
     main()
+
