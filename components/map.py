@@ -5,9 +5,9 @@ from enum import StrEnum
 
 
 class Tile(StrEnum):
-    WALL = '#'        # 시각적으론 바다(sea) — 통과 불가
+    WALL = '#'        # 통과 불가 벽
     FLOOR = '.'       # 시각적으론 잔디 — 방 내부
-    PATH = ','        # 시각적으론 자갈길 — 통로(corridor)
+    PATH = ','        # 시각적으론 자갈길 — 통로
     DOOR = 'D'
     STAIRS_UP = '<'
     STAIRS_DOWN = '>'

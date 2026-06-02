@@ -7,12 +7,13 @@ from components.map import DungeonMap
 class Player:
     x: int
     y: int
-    hp: int = 30
-    max_hp: int = 30
+    hp: int = 36
+    max_hp: int = 36
     atk: int = 5
     def_: int = 0
     xp: int = 0
     arrows: int = 5
+    shockwave_radius: int = 1
 
     DEFAULT_ATK: int = 5
     DEFAULT_DEF: int = 0
@@ -33,17 +34,11 @@ class Player:
 
     def area_attack(self, enemies: list) -> list:
         hit_enemies = []
-        for dx in [-1, 0, 1]:
-            for dy in [-1, 0, 1]:
-                if dx == 0 and dy == 0:
-                    continue
-                
-                nx, ny = self.x + dx, self.y + dy
-                for enemy in enemies:
-                    if enemy.x == nx and enemy.y == ny:
-                        self.attack(enemy)
-                        enemy.stunned = True
-                        hit_enemies.append(enemy)
+        for enemy in enemies:
+            distance = abs(enemy.x - self.x) + abs(enemy.y - self.y)
+            if 0 < distance <= self.shockwave_radius:
+                self.attack(enemy)
+                hit_enemies.append(enemy)
         return hit_enemies
 
     @property

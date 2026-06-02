@@ -3,8 +3,8 @@ import random
 from components.map import DungeonMap, Room, Tile
 
 MIN_ROOM_SIZE = 5
-MAX_ROOM_SIZE = 12
-MIN_PARTITION_SIZE = 8
+MAX_ROOM_SIZE = 10
+MIN_PARTITION_SIZE = 10
 
 
 class _BSPNode:
