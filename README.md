@@ -1,55 +1,111 @@
-# Dungeon Crawler RPG — EC2208 팀 프로젝트
+# EC2208 던전 크롤러 TUI
 
-턴제 던전 크롤러 RPG.
+Textual 기반 턴제 던전 크롤러 RPG.
 
----
+최종 제출/데모 경로는 TUI 하나로 통일했다. 에셋 없이도 AI+X Studio 컴퓨터에서 실행할 수 있고, 과제 가이던스의 6개 핵심 자료구조/알고리즘을 코드와 화면에서 설명할 수 있게 구성했다.
 
-## 진행 상황
+## 게임 목표
 
-### 완료
+`>` 계단에 도착하면 다음 층으로 내려간다. 3층까지 클리어하면 승리한다.
 
-| 파일 | 내용 |
-| ------ | ------ |
-| `components/map.py` | `Tile`, `Room`, `DungeonMap` — 타일 CRUD, 이웃 탐색, 보행 가능 판정 |
-| `algorithms/map_gen.py` | BSP 맵 생성 — 재귀 분할 → 방 배치 → 터널 연결 → 방 그래프 → 계단 배치 |
-| `algorithms/pathfinding.py` | A* (맨해튼 거리 휴리스틱, min-heap, closed-set 미사용 최적화) |
-| `components/player.py` | `Player` — 이동, stat(HP/ATK/DEF/XP/화살), `hp_ratio` |
-| `components/enemy.py` | `Enemy` (A* 이동, 인접 공격, 충돌 처리), `EnemyManager` (스폰, 턴 실행, 사망 처리) |
-| `game.py` | 메인 게임 루프, 플레이어·적 렌더, 카메라, HP HUD, **턴제 상태머신** (`PLAYER_TURN` <-> `ENEMY_TURN`) |
-| `main.py` | 진입점 |
+오른쪽 상태 패널에 목표 계단까지의 방향과 맨해튼 거리가 표시된다.
 
-### 미구현
+## 난이도
 
-bonus: 
-- sprite variant
-- install vegetable randomly
-- user, enemy sprite
+던전은 한 화면 안에서 평균 8개 안팎의 방을 만든다. 적은 시작 방을 제외한 각 방에 배치된다. 1층은 방마다 최대 2마리, 2층부터는 방마다 최대 3마리까지 등장한다.
 
-| 파일 | 우선순위 | 내용 |
-| ------ | --------- | ------ |
-| `components/undo.py` | ★★★ | `GameSnapshot`, `UndoStack` (max 30) |
-| `components/turn.py` | ★★☆ | `TurnManager` (deque) — 현재 `game.py`에 인라인으로 존재 |
-| `components/inventory.py` | ★★☆ | `ItemLinkedList`, `Inventory`, `Item` |
-| `components/leaderboard.py` | ★☆☆ | `Leaderboard`, `ScoreEntry`, JSON 영속성 |
-| `renderer/pygame_renderer.py` | ★★☆ | `Camera`, `PygameRenderer` — 현재 `game.py`에 인라인으로 존재 |
-| `renderer/hud.py` | ★★☆ | `HUD` — HP/XP/Undo 게이지, 인벤토리 패널 |
-| `renderer/message_log.py` | ★☆☆ | `MessageLog` — 전투 로그 |
-| `renderer/screens/` | ★☆☆ | 메인메뉴, 인벤토리, 리더보드 화면 |
-| `renderer/theme.json` | ★☆☆ | pygame_gui 다크 테마 |
+층이 올라갈수록 적의 체력과 공격력, 감지 범위가 조금씩 증가한다. 다만 시작하자마자 모든 적이 몰려오지 않도록 1층 감지 범위는 짧게 잡았다.
 
----
+플레이어 기본 HP는 36, 기본 공격력은 5다. 1층 기본형 `G`는 HP 10이라 기본 공격 두 번에 처치할 수 있다.
 
-## 현재 동작
+적은 여러 종류가 있다.
 
-- BSP 알고리즘으로 매 실행마다 다른 던전 생성
-- WASD / 방향키로 플레이어 이동
-- 적이 A*로 플레이어를 추적, 인접 시 공격
-- 플레이어 이동 → 적 턴 순서의 기본 턴제 동작
-- pygame_gui HP 게이지 HUD
+| 문자 | 색 | 종류 | 특징 |
+| --- | --- | --- | --- |
+| `G` | 빨강 | 기본형 | 표준 체력/공격력 |
+| `S` | 노랑 | 정찰형 | 체력은 낮지만 감지 범위가 넓음 |
+| `B` | 보라 배경 | 돌격형 | 체력과 공격력이 높음 |
 
-## 설계와의 차이점
+1층 기준 감지 범위는 `G` 8칸, `S` 11칸, `B` 6칸이다. 층이 올라갈 때마다 1칸씩 늘어난다.
 
-- `VIEWPORT_W` = 1020 (설계: 900) / `HUD_W` = 260 (설계: 380)
-- `Camera` 클래스 없이 `cam_x/cam_y` 변수로 단순 처리
-- `TurnManager` 없이 `game.py` 내 상태머신으로 처리
-- `enemy.py`에 `take_turn` / `_recalculate_path` 대신 `move_towards` 단일 메서드로 단순화
+## 실행
+
+```bash
+uv run python main.py
+```
+
+## 조작
+
+| 키 | 동작 |
+| --- | --- |
+| WASD / Arrow | 이동 |
+| `z` | 마름모 범위 충격파 |
+| `u` | 되감기 |
+| `i` | 인벤토리 |
+| `l` | 리더보드 |
+| `Ctrl+D` | A* 디버그 경로 표시 |
+| `?` | 도움말 |
+| `q` / Esc | 종료 |
+
+`d`는 WASD 오른쪽 이동키라서, A* 디버그 오버레이는 `Ctrl+D`로 배정했다.
+
+`z` 충격파는 사용 후 한 턴 쉬어야 다시 쓸 수 있다. 충격파는 맨해튼 거리 기준 마름모 범위에 광역 피해를 주지만 적을 무한 기절시키지 않으므로, 남발하면 적 턴에 반격당한다.
+
+승리하거나 HP가 0이 되면 오른쪽 패널과 메시지 로그에 종료 배너가 표시된다. 종료 후에는 이동/공격/되감기가 막히고, `l`로 리더보드를 보거나 `q`/Esc로 종료할 수 있다.
+
+## 6개 핵심 기능
+
+| 기능 | 자료구조 / 알고리즘 | 코드 위치 | 선택 이유 |
+| --- | --- | --- | --- |
+| 던전 맵 | 2차원 배열 + 방 그래프 | `components/map.py`, `algorithms/map_gen.py` | 타일 조회는 2차원 배열로 O(1), 방 연결은 인접 리스트 그래프로 표현 |
+| 되감기 시스템 | 스택 | `components/undo.py`, `game.py` | 가장 최근 행동부터 되돌리는 LIFO 구조 |
+| 턴 관리 | 큐 | `components/turn.py`, `game.py` | 플레이어와 적 턴을 FIFO 순서로 반복 |
+| 아이템 인벤토리 | dict + 연결 리스트 | `components/inventory.py`, `components/item.py` | 카테고리는 dict로 찾고, 카테고리 내부 아이템은 연결 리스트로 관리 |
+| 적 AI | A* + heap + closed set | `algorithms/pathfinding.py`, `components/enemy.py` | 맨해튼 휴리스틱으로 BFS보다 목표 방향 탐색이 효율적 |
+| 리더보드 | 배열 + 정렬 | `components/leaderboard.py` | 상위 10개 점수만 필요하므로 단순 정렬로 구현과 설명이 명확 |
+
+## 화면 구성
+
+- 중앙: 던전 맵 뷰포트
+- 오른쪽: 목표 방향/거리, 상태, 인벤토리, 리더보드, 알고리즘 디버그 패널
+- 하단: 메시지 로그
+
+오른쪽 상태 패널에는 HP, XP, 되감기 슬롯이 막대 게이지로 표시된다.
+
+아이템 사용은 턴을 소비하지 않는 보조 행동이다. 같은 종류 아이템은 인벤토리에서 `x2`, `x3`처럼 묶여 보이고, 사용할 때마다 한 개씩 소비된다. 공격/방어 부적의 스탯 증가는 계속 누적 유지되고, 회복 약초는 즉시 HP를 `+12` 회복한다. 확산 수정은 충격파의 마름모 반경을 `+1` 늘린다. 오른쪽 패널의 발동 배너와 플레이어 `@` 색상 변화만 다음 행동까지 표시된다.
+
+공격이 명중하면 맞은 적 칸이 붉게 강조된다. 충격파는 주변 칸에 노란 `*` 효과를 표시하고, 오른쪽 패널에 명중 수와 총 피해량을 보여 준다. 적에게 맞으면 플레이어 `@`가 붉게 바뀌고 피격 피해량 배너가 따로 표시된다.
+
+## 문자 표시
+
+| 문자 | 의미 |
+| --- | --- |
+| `@` | 플레이어 |
+| `G`, `S`, `B` | 적 |
+| 어두운 벽 | 벽 |
+| 어두운 빈칸 | 방 바닥 |
+| 어두운 길 | 통로 |
+| `⌂`, `⌄` | 계단 |
+| `♦` | 공격 아이템 |
+| `◆` | 방어 아이템 |
+| `✚` | 회복 아이템 |
+| `◇` | 충격파 범위 아이템 |
+| `※` | A* 디버그 경로 |
+| `×`, `✦` | 타격/충격파 효과 |
+
+## 점수 공식
+
+```text
+score = kill_xp * 10
+      + floors_cleared * 500
+      + undo_remaining * 50
+      + max(0, 3000 - elapsed_seconds) * 10
+```
+
+## 테스트
+
+```bash
+python -m unittest
+```
+
+테스트는 맵 생성, A*, 되감기 스택, 턴 큐, 연결 리스트 인벤토리, 리더보드 정렬, 엔진 기본 흐름을 검증한다.
