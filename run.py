@@ -58,6 +58,7 @@ def venv_python() -> Path:
 
 
 def install_dependencies(python: Path) -> None:
+    ensure_pip(python)
     print("Installing dependencies from requirements.txt...")
     subprocess.check_call(
         [
@@ -71,6 +72,24 @@ def install_dependencies(python: Path) -> None:
         ],
         cwd=ROOT,
     )
+
+
+def ensure_pip(python: Path) -> None:
+    if subprocess.run(
+        [str(python), "-m", "pip", "--version"],
+        cwd=ROOT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    ).returncode == 0:
+        return
+
+    print("Bootstrapping pip in the virtual environment...", flush=True)
+    try:
+        subprocess.check_call([str(python), "-m", "ensurepip", "--upgrade"], cwd=ROOT)
+    except subprocess.CalledProcessError:
+        print("Could not bootstrap pip automatically.", file=sys.stderr)
+        print("Try running: python3 -m ensurepip --upgrade", file=sys.stderr)
+        raise
 
 
 def dependency_available(python: Path, module_name: str) -> bool:
