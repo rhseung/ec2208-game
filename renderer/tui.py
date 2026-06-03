@@ -87,8 +87,11 @@ class DungeonView(ScrollView):
         self.show_horizontal_scrollbar = False
         self.camera_x = 0
         self.camera_y = 0
+        self._camera_ready = False
 
     def render_line(self, y: int) -> Strip:
+        if not self._camera_ready:
+            self.follow_player()
         visible_width = max(1, self.size.width)
         world_width = max(1, (visible_width + TILE_WIDTH - 1) // TILE_WIDTH)
         world_y = self.camera_y + y
@@ -108,7 +111,13 @@ class DungeonView(ScrollView):
 
         return Strip(segments, visible_width)
 
+    def on_resize(self) -> None:
+        self.follow_player()
+        self.refresh()
+
     def follow_player(self) -> None:
+        if self.size.width <= 0 or self.size.height <= 0:
+            return
         px, py = self.game.player_pos
         visible_width = max(1, self.size.width // TILE_WIDTH)
         visible_height = max(1, self.size.height)
@@ -118,6 +127,7 @@ class DungeonView(ScrollView):
         target_y = max(0, min(py - visible_height // 2, max_y))
         self.camera_x = target_x
         self.camera_y = target_y
+        self._camera_ready = True
 
     def _tile_text(self, char: str, width: int) -> str:
         if width <= 1:
