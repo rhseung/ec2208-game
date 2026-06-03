@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from collections import deque
-from typing import TypeVar
+from typing import Generic, TypeVar
 
 
 Actor = TypeVar("Actor")
 
 
-class TurnManager:
+class TurnManager(Generic[Actor]):
     """턴 순서를 관리하는 FIFO 큐.
 
     이 게임은 각 행위자가 라운드마다 한 번씩 행동하므로 일반 큐로 충분하다.

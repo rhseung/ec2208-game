@@ -53,8 +53,13 @@ class CoreFeatureTests(unittest.TestCase):
 
         inventory.add(item)
 
-        self.assertEqual(inventory.find("item-1").name, "공격 부적")
-        self.assertEqual(inventory.use("item-1").category, ItemType.ATK.value)
+        found = inventory.find("item-1")
+        self.assertIsNotNone(found)
+        self.assertEqual(found.name, "공격 부적")
+
+        used = inventory.use("item-1")
+        self.assertIsNotNone(used)
+        self.assertEqual(used.category, ItemType.ATK.value)
         self.assertIsNone(inventory.find("item-1"))
 
     def test_inventory_displays_same_items_as_stacks(self) -> None:
@@ -147,6 +152,7 @@ class CoreFeatureTests(unittest.TestCase):
 
         self.assertTrue(game.use_inventory_slot(0))
         self.assertEqual(game.player.shockwave_radius, 2)
+        self.assertIsNotNone(game.item_effect)
         self.assertEqual(game.item_effect.category, ItemType.RANGE.value)
 
         self.assertTrue(game.undo())
@@ -158,6 +164,7 @@ class CoreFeatureTests(unittest.TestCase):
         game.enemy_manager.set_all([Enemy(target[0], target[1], hp=20, max_hp=20, atk=0)])
 
         self.assertTrue(game.area_attack())
+        self.assertIsNotNone(game.combat_effect)
         self.assertNotIn(target, game.combat_effect.positions)
         self.assertEqual(game.enemy_manager.get_all()[0].hp, 20)
 
@@ -165,6 +172,7 @@ class CoreFeatureTests(unittest.TestCase):
         game.inventory.add(Item("item-range", "확산 수정", ItemType.RANGE.value, 1, -1, -1))
         self.assertTrue(game.use_inventory_slot(0))
         self.assertTrue(game.area_attack())
+        self.assertIsNotNone(game.combat_effect)
         self.assertIn(target, game.combat_effect.positions)
 
     def test_shockwave_range_uses_diamond_shape(self) -> None:
@@ -182,6 +190,7 @@ class CoreFeatureTests(unittest.TestCase):
         )
 
         self.assertTrue(game.area_attack())
+        self.assertIsNotNone(game.combat_effect)
         self.assertIn(straight_target, game.combat_effect.positions)
         self.assertNotIn(diagonal_target, game.combat_effect.positions)
 
@@ -200,6 +209,7 @@ class CoreFeatureTests(unittest.TestCase):
         game.enemy_manager.set_all([Enemy(target[0], target[1], hp=20, max_hp=20, atk=0)])
 
         self.assertTrue(game.area_attack())
+        self.assertIsNotNone(game.combat_effect)
         self.assertNotIn(target, game.combat_effect.positions)
         self.assertEqual(game.enemy_manager.get_all()[0].hp, 20)
 
