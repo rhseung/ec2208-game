@@ -3,7 +3,7 @@ name = "ec2208-game"
 version = "0.1.0"
 description = "EC2208 Game Project"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.9"
 dependencies = [
     "textual>=8.2,<9",
 ]

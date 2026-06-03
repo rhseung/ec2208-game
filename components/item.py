@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import StrEnum
+from enum import Enum
 
 
-class ItemType(StrEnum):
+class ItemType(str, Enum):
     ATK = "ATK"
     DEF = "DEF"
     HEAL = "HEAL"

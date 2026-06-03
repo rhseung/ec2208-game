@@ -1,13 +1,13 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from enum import StrEnum
+from enum import Enum
 from components.map import DungeonMap, Tile
 from components.item import ItemManager, ItemType
 from algorithms.pathfinding import astar
 import random
 
 
-class EnemyType(StrEnum):
+class EnemyType(str, Enum):
     GRUNT = "GRUNT"
     SCOUT = "SCOUT"
     BRUTE = "BRUTE"

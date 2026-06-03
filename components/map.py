@@ -1,10 +1,10 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from enum import StrEnum
+from enum import Enum
 
 
 
-class Tile(StrEnum):
+class Tile(str, Enum):
     WALL = '#'        # 통과 불가 벽
     FLOOR = '.'       # 시각적으론 잔디 — 방 내부
     PATH = ','        # 시각적으론 자갈길 — 통로

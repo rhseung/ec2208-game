@@ -31,8 +31,10 @@ Textual 기반 턴제 던전 크롤러 RPG.
 ## 실행
 
 ```bash
-uv run python main.py
+python3 run.py
 ```
+
+처음 실행할 때 `.venv`를 만들고 `requirements.txt`의 패키지를 자동 설치한다.
 
 ## 조작
 
@@ -105,7 +107,7 @@ score = kill_xp * 10
 ## 테스트
 
 ```bash
-python -m unittest
+python3 run.py test
 ```
 
 테스트는 맵 생성, A*, 되감기 스택, 턴 큐, 연결 리스트 인벤토리, 리더보드 정렬, 엔진 기본 흐름을 검증한다.
