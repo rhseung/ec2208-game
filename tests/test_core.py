@@ -347,6 +347,36 @@ class CoreFeatureTests(unittest.TestCase):
         self.assertTrue(game.area_attack())
         self.assertTrue(all(not enemy.stunned for enemy in game.enemy_manager.get_all()))
 
+    def test_ended_game_freezes_score_and_blocks_gameplay_actions(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Game(seed=1)
+            game.leaderboard = Leaderboard(Path(tmp) / "leaderboard.json")
+            game.inventory.add(Item("item-atk", "공격 부적", ItemType.ATK.value, 2, -1, -1))
+            direction = next(
+                (dx, dy)
+                for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0))
+                if game.dungeon_map.is_walkable(game.player.x + dx, game.player.y + dy)
+            )
+            self.assertTrue(game.move_player(*direction))
+
+            before_position = game.player_pos
+            before_attack = game.player.atk
+            before_undo_remaining = game.undo_stack.remaining()
+            game._end_game(victory=False, message="테스트 종료")
+            final_score = game.score
+            final_elapsed = game.elapsed_seconds
+
+            game.started_at -= 9999
+            self.assertEqual(game.score, final_score)
+            self.assertEqual(game.elapsed_seconds, final_elapsed)
+            self.assertFalse(game.undo())
+            self.assertFalse(game.use_inventory_slot(0))
+            self.assertFalse(game.move_player(*direction))
+            self.assertFalse(game.area_attack())
+            self.assertEqual(game.player_pos, before_position)
+            self.assertEqual(game.player.atk, before_attack)
+            self.assertEqual(game.undo_stack.remaining(), before_undo_remaining)
+
 
 if __name__ == "__main__":
     unittest.main()

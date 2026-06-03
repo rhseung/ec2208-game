@@ -437,6 +437,8 @@ class DungeonApp(App[None]):
         self._refresh_all()
 
     def action_show_inventory(self) -> None:
+        if self._block_if_ended():
+            return
         self.panel_mode = "inventory"
         self._refresh_all()
 
@@ -445,10 +447,14 @@ class DungeonApp(App[None]):
         self._refresh_all()
 
     def action_show_help(self) -> None:
+        if self._block_if_ended():
+            return
         self.panel_mode = "help"
         self._refresh_all()
 
     def action_toggle_debug(self) -> None:
+        if self._block_if_ended():
+            return
         self.game.toggle_debug_paths()
         self.panel_mode = "debug"
         self._refresh_all()

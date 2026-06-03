@@ -86,6 +86,8 @@ class Game:
         self.kill_xp = 0
         self.shockwave_cooldown = 0
         self.started_at = time.monotonic()
+        self.ended_elapsed_seconds: int | None = None
+        self.final_score: int | None = None
         self.game_over = False
         self.victory = False
         self.debug_paths = False
@@ -101,10 +103,14 @@ class Game:
 
     @property
     def elapsed_seconds(self) -> int:
+        if self.ended_elapsed_seconds is not None:
+            return self.ended_elapsed_seconds
         return int(time.monotonic() - self.started_at)
 
     @property
     def score(self) -> int:
+        if self.final_score is not None:
+            return self.final_score
         return Leaderboard.calculate_score(
             kill_xp=self.kill_xp,
             floors_cleared=self.floors_cleared,
@@ -219,6 +225,9 @@ class Game:
         return True
 
     def undo(self) -> bool:
+        if self.game_over:
+            self.log("게임이 끝나 되감기를 사용할 수 없습니다.")
+            return False
         snapshot = self.undo_stack.pop()
         if snapshot is None:
             self.log("되감기 스택이 비어 있습니다.")
@@ -231,6 +240,9 @@ class Game:
         return True
 
     def use_inventory_slot(self, slot_index: int) -> bool:
+        if self.game_over:
+            self.log("게임이 끝나 아이템을 사용할 수 없습니다.")
+            return False
         stacks = self.inventory.stack_entries()
         if not (0 <= slot_index < len(stacks)):
             self.log("해당 슬롯에 아이템이 없습니다.")
@@ -343,10 +355,7 @@ class Game:
             self._remove_dead_enemies()
             if self.player.hp <= 0:
                 self.player.hp = 0
-                self.game_over = True
-                self.victory = False
-                self.log("게임 오버. 던전에게 패배했습니다.")
-                self.save_score()
+                self._end_game(victory=False, message="게임 오버. 던전에게 패배했습니다.")
         self.turn_manager.advance()
 
     def _tick_cooldowns(self) -> None:
@@ -377,10 +386,7 @@ class Game:
 
         self.floors_cleared += 1
         if self.floor >= MAX_FLOORS:
-            self.game_over = True
-            self.victory = True
-            self.log("승리! 마지막 층을 클리어했습니다.")
-            self.save_score()
+            self._end_game(victory=True, message="승리! 마지막 층을 클리어했습니다.")
             return
 
         self.floor += 1
@@ -402,6 +408,21 @@ class Game:
         self.enemy_manager.spawn(self.dungeon_map, floor=self.floor)
         self.item_manager = ItemManager()
         self._scatter_items()
+
+    def _end_game(self, victory: bool, message: str) -> None:
+        if self.game_over:
+            return
+        self.ended_elapsed_seconds = int(time.monotonic() - self.started_at)
+        self.final_score = Leaderboard.calculate_score(
+            kill_xp=self.kill_xp,
+            floors_cleared=self.floors_cleared,
+            undo_remaining=self.undo_stack.remaining(),
+            elapsed_seconds=self.ended_elapsed_seconds,
+        )
+        self.game_over = True
+        self.victory = victory
+        self.log(message)
+        self.save_score()
 
     def _scatter_items(self) -> None:
         rooms = self.dungeon_map.rooms[1:]
@@ -440,6 +461,8 @@ class Game:
         self.shockwave_cooldown = snapshot.shockwave_cooldown
         self.game_over = False
         self.victory = False
+        self.ended_elapsed_seconds = None
+        self.final_score = None
         self.item_effect = None
         self.combat_effect = None
         self.player_hit_effect = None
