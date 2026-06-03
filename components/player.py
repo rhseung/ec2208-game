@@ -32,9 +32,15 @@ class Player:
         enemy.hp -= damage
         return damage
 
-    def area_attack(self, enemies: list) -> list:
+    def area_attack(self, enemies: list, reachable_positions: set[tuple[int, int]] | None = None) -> list:
         hit_enemies = []
         for enemy in enemies:
+            if reachable_positions is not None:
+                if (enemy.x, enemy.y) in reachable_positions:
+                    self.attack(enemy)
+                    hit_enemies.append(enemy)
+                continue
+
             distance = abs(enemy.x - self.x) + abs(enemy.y - self.y)
             if 0 < distance <= self.shockwave_radius:
                 self.attack(enemy)

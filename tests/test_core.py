@@ -9,7 +9,7 @@ from components.enemy import DETECTION_RANGES, Enemy, EnemyType, _make_enemy
 from components.inventory import Inventory
 from components.item import Item, ItemType
 from components.leaderboard import Leaderboard, ScoreEntry
-from components.map import DungeonMap
+from components.map import DungeonMap, Tile
 from components.turn import TurnManager
 from components.undo import UndoStack
 from game import Game, PLAYER_ACTOR, ENEMY_ACTOR
@@ -184,6 +184,24 @@ class CoreFeatureTests(unittest.TestCase):
         self.assertTrue(game.area_attack())
         self.assertIn(straight_target, game.combat_effect.positions)
         self.assertNotIn(diagonal_target, game.combat_effect.positions)
+
+    def test_shockwave_is_blocked_by_walls(self) -> None:
+        game = Game(seed=1)
+        game.player.x = 5
+        game.player.y = 5
+        game.player.shockwave_radius = 2
+        for y in range(game.dungeon_map.height):
+            for x in range(game.dungeon_map.width):
+                game.dungeon_map.set_tile(x, y, Tile.WALL)
+
+        game.dungeon_map.set_tile(5, 5, Tile.FLOOR)
+        game.dungeon_map.set_tile(7, 5, Tile.FLOOR)
+        target = (7, 5)
+        game.enemy_manager.set_all([Enemy(target[0], target[1], hp=20, max_hp=20, atk=0)])
+
+        self.assertTrue(game.area_attack())
+        self.assertNotIn(target, game.combat_effect.positions)
+        self.assertEqual(game.enemy_manager.get_all()[0].hp, 20)
 
     def test_full_hp_heal_item_is_not_consumed(self) -> None:
         game = Game(seed=1)

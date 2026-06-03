@@ -193,7 +193,8 @@ class Game:
             return False
 
         self._push_snapshot()
-        hit = self.player.area_attack(self.enemy_manager.get_all())
+        shockwave_positions = set(self._shockwave_positions())
+        hit = self.player.area_attack(self.enemy_manager.get_all(), shockwave_positions)
         positions = tuple((enemy.x, enemy.y) for enemy in hit)
         if hit:
             total_damage = len(hit) * self.player.atk
@@ -299,14 +300,25 @@ class Game:
         self.player_hit_effect = None
 
     def _shockwave_positions(self) -> tuple[tuple[int, int], ...]:
-        positions: list[tuple[int, int]] = []
         radius = self.player.shockwave_radius
-        for dy in range(-radius, radius + 1):
-            for dx in range(-radius, radius + 1):
-                if dx == 0 and dy == 0:
+        start = self.player_pos
+        positions: list[tuple[int, int]] = []
+        visited = {start}
+        queue: deque[tuple[int, int, int]] = deque([(self.player.x, self.player.y, 0)])
+
+        while queue:
+            x, y, distance = queue.popleft()
+            if distance >= radius:
+                continue
+
+            for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0)):
+                nx, ny = x + dx, y + dy
+                if (nx, ny) in visited or not self.dungeon_map.is_walkable(nx, ny):
                     continue
-                if abs(dx) + abs(dy) <= radius:
-                    positions.append((self.player.x + dx, self.player.y + dy))
+                visited.add((nx, ny))
+                positions.append((nx, ny))
+                queue.append((nx, ny, distance + 1))
+
         return tuple(positions)
 
     def _finish_player_action(self) -> None:
