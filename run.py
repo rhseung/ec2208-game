@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -36,6 +35,10 @@ def main() -> int:
 
     ensure_venv()
     python = venv_python()
+    if not python.exists():
+        print(f"Could not find the virtual environment Python at {python}", file=sys.stderr)
+        print("Remove .venv and run again: python3 run.py", file=sys.stderr)
+        return 1
     if args.reinstall or not dependency_available(python, "textual"):
         install_dependencies(python)
 
@@ -52,9 +55,16 @@ def ensure_venv() -> None:
 
 
 def venv_python() -> Path:
-    if os.name == "nt":
-        return VENV_DIR / "Scripts" / "python.exe"
-    return VENV_DIR / "bin" / "python"
+    candidates = (
+        VENV_DIR / "Scripts" / "python.exe",
+        VENV_DIR / "Scripts" / "python",
+        VENV_DIR / "bin" / "python.exe",
+        VENV_DIR / "bin" / "python",
+    )
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0] if sys.platform.startswith("win") else candidates[-1]
 
 
 def install_dependencies(python: Path) -> None:
