@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import Enum
 
@@ -20,7 +18,7 @@ class Item:
     x: int
     y: int
 
-    def copy(self) -> Item:
+    def copy(self) -> "Item":
         return Item(
             id=self.id,
             name=self.name,

@@ -3,7 +3,7 @@ name = "ec2208-game"
 version = "0.1.0"
 description = "EC2208 Game Project"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.13"
 dependencies = [
     "textual>=8.2,<9",
 ]
@@ -12,10 +12,4 @@ dependencies = [
 project-includes = [
     "**/*.py*",
     "**/*.ipynb",
-]
-
-[dependency-groups]
-dev = [
-    "ipykernel>=7.2.0",
-    "jupyter>=1.1.1",
 ]

@@ -1,0 +1,10 @@
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.pyrefly
+.ipynb_checkpoints
+data
+_workspace

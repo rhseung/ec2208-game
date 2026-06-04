@@ -30,11 +30,14 @@ Textual 기반 턴제 던전 크롤러 RPG.
 
 ## 실행
 
+이 프로젝트의 공식 실행 환경은 Docker다. Windows, macOS, Ubuntu 모두 Docker Compose 기준으로 실행한다.
+
 ```bash
-python3 run.py
+docker compose build
+docker compose run --rm game
 ```
 
-처음 실행할 때 `.venv`를 만들고 `requirements.txt`의 패키지를 자동 설치한다.
+리더보드 기록은 프로젝트의 `data` 폴더에 저장된다.
 
 ## 조작
 
@@ -107,7 +110,7 @@ score = kill_xp * 10
 ## 테스트
 
 ```bash
-python3 run.py test
+docker compose run --rm game uv run --locked python -m unittest
 ```
 
 테스트는 맵 생성, A*, 되감기 스택, 턴 큐, 연결 리스트 인벤토리, 리더보드 정렬, 엔진 기본 흐름을 검증한다.

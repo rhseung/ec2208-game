@@ -1,0 +1,10 @@
+services:
+  game:
+    build: .
+    image: ec2208-game
+    environment:
+      TERM: xterm-256color
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./data:/app/data

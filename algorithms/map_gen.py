@@ -1,4 +1,3 @@
-from __future__ import annotations
 import random
 from components.map import DungeonMap, Room, Tile
 
@@ -13,8 +12,8 @@ class _BSPNode:
         self.y = y
         self.w = w
         self.h = h
-        self.left: _BSPNode | None = None
-        self.right: _BSPNode | None = None
+        self.left: "_BSPNode | None" = None
+        self.right: "_BSPNode | None" = None
         self.room: Room | None = None
 
     def is_leaf(self) -> bool:

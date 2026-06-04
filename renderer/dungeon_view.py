@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from rich.segment import Segment
 from textual.geometry import Size
 from textual.scroll_view import ScrollView

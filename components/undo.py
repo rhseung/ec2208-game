@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 from components.enemy import Enemy, EnemyType
@@ -56,7 +54,7 @@ class GameSnapshot:
         floors_cleared: int,
         kill_xp: int,
         shockwave_cooldown: int,
-    ) -> GameSnapshot:
+    ) -> "GameSnapshot":
         return cls(
             player=PlayerState(
                 x=player.x,

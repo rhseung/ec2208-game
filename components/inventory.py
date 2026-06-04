@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Iterator
 
@@ -9,7 +7,7 @@ from components.item import Item, ItemType
 @dataclass
 class ItemNode:
     item: Item
-    next: ItemNode | None = None
+    next: "ItemNode | None" = None
 
 
 @dataclass(frozen=True)

@@ -1,4 +1,3 @@
-from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from components.map import DungeonMap, Tile
@@ -38,7 +37,7 @@ class Enemy:
     detection_range: int = 15
     last_path: list[tuple[int, int]] = field(default_factory=list)
 
-    def move(self, dx: int, dy: int, dungeon: DungeonMap, enemies: list[Enemy], player) -> bool:
+    def move(self, dx: int, dy: int, dungeon: DungeonMap, enemies: list["Enemy"], player) -> bool:
         nx, ny = self.x + dx, self.y + dy
         
         if not dungeon.is_walkable(nx, ny):
@@ -55,7 +54,7 @@ class Enemy:
         self.y = ny
         return True
 
-    def move_towards(self, tx: int, ty: int, dungeon: DungeonMap, enemies: list[Enemy], player) -> None:
+    def move_towards(self, tx: int, ty: int, dungeon: DungeonMap, enemies: list["Enemy"], player) -> None:
         if self.stunned:
             self.stunned = False
             self.last_path = []

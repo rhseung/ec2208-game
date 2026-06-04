@@ -1,4 +1,3 @@
-from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
@@ -23,7 +22,7 @@ class Room:
     def center(self) -> tuple[int, int]:
         return self.x + self.w // 2, self.y + self.h // 2
 
-    def intersects(self, other: Room) -> bool:
+    def intersects(self, other: "Room") -> bool:
         return (
             self.x < other.x + other.w
             and self.x + self.w > other.x
